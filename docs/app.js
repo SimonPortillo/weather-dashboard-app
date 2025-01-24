@@ -7,12 +7,26 @@ class WeatherApp {
         this.fetchButton = document.getElementById('fetch-weather');
         
         this.setupEventListeners();
+        this.marker = null;
+        this.mapLayer = null;
         this.initMap();
+        this.initTheme();
     }
 
     setupEventListeners() {
         this.fetchButton.addEventListener('click', () => this.handleLocationSearch());
         document.getElementById('use-current-location').addEventListener('click', () => this.useCurrentLocation());
+        
+        // Add enter key listener
+        this.locationInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this.handleLocationSearch();
+            }
+        });
+
+        // Add theme toggle listener
+        document.querySelector('.theme-toggle').addEventListener('click', () => this.toggleTheme());
     }
 
     async handleLocationSearch() {
@@ -76,9 +90,8 @@ class WeatherApp {
     showError(message) {
         const errorDiv = document.getElementById('error-message');
         errorDiv.innerHTML = `
-            <span class="material-icons-round">error_outline</span>
-            ${message}
-        `;
+            <span class="material-symbols-rounded" style="color: white; font-size: 24px; 
+            vertical-align: middle; margin-right: 0px; margin-bottom: 4px;">error</span>${message}`;
         errorDiv.style.display = 'block';
         setTimeout(() => {
             errorDiv.style.display = 'none';
@@ -114,38 +127,95 @@ class WeatherApp {
         return 'light_mode';
     }
 
-    updateWeatherUI(weather, locationName) {
+    async updateWeatherUI(weather, locationName) {
+        const elements = [
+            document.getElementById('location-name'),
+            document.getElementById('weather-summary'),
+            document.querySelector('.weather-details')
+        ];
+        
+        // Fade out
+        elements.forEach(el => el.classList.add('fade-out'));
+        
+        // Wait for fade out
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         const locationIcon = '<span class="material-symbols-rounded">location_on</span>';
         const tempIcon = '<span class="material-symbols-rounded">device_thermostat</span>';
         const rainIcon = '<span class="material-symbols-rounded">water_drop</span>';
         const cloudIcon = '<span class="material-symbols-rounded">cloud</span>';
 
-        // Update location name
+        // Update content
         document.getElementById('location-name').innerHTML = `
             ${locationIcon}<span class="location-text">${locationName}</span>
         `;
-
-        // Update weather summary icon with explicit classes
         document.getElementById('weather-summary').innerHTML = `
             <span class="material-symbols-rounded weather-summary-icon">${this.getWeatherIcon(weather)}</span>
         `;
-
-        // Update weather details
         document.getElementById('temperature').innerHTML = `${tempIcon}<span>Temperature: ${weather.temperature}°C</span>`;
         document.getElementById('rain').innerHTML = `${rainIcon}<span>Rain: ${weather.rain}mm</span>`;
         document.getElementById('cloudiness').innerHTML = `${cloudIcon}<span>Cloudiness: ${weather.cloudiness}%</span>`;
+
+        // Fade in
+        setTimeout(() => {
+            elements.forEach(el => el.classList.remove('fade-out'));
+        }, 50);
     }
 
     initMap() {
         this.map = L.map('map').setView([0, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(this.map);
+        this.updateMapTheme(localStorage.getItem('theme') || 'light');
     }
 
     updateMap(lat, lon) {
         const position = [parseFloat(lat), parseFloat(lon)];
-        this.map.setView(position, 13);
+        
+        // Remove existing marker if any
+        if (this.marker) {
+            this.map.removeLayer(this.marker);
+        }
+        
+        // Add new marker
+        this.marker = L.marker(position).addTo(this.map);
+        this.map.setView(position, 10);
+    }
+
+    updateMapTheme(theme) {
+        const lightStyle = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        const darkStyle = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+        
+        // Remove existing layer if any
+        if (this.mapLayer) {
+            this.map.removeLayer(this.mapLayer);
+        }
+
+        // Add new layer with appropriate style
+        this.mapLayer = L.tileLayer(theme === 'dark' ? darkStyle : lightStyle, {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(this.map);
+    }
+
+    initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        this.updateThemeIcon(savedTheme);
+    }
+
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        this.updateThemeIcon(newTheme);
+        this.updateMapTheme(newTheme);
+    }
+
+    updateThemeIcon(theme) {
+        const themeIcon = document.querySelector('.theme-toggle .material-symbols-rounded');
+        themeIcon.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
     }
 }
 

@@ -3,7 +3,7 @@ const NOMINATIM_API = 'https://nominatim.openstreetmap.org/search';
 export async function geocodeLocation(searchText) {
     const response = await fetch(`${NOMINATIM_API}?format=json&q=${encodeURIComponent(searchText)}`);
     const data = await response.json();
-    if (data.length === 0) throw new Error('Location not found');
+    if (data.length === 0) throw new Error('Location not found!');
     return {
         lat: data[0].lat,
         lon: data[0].lon,
@@ -17,7 +17,7 @@ export const fetchWeatherData = async (location) => {
     try {
         const response = await fetch(url, {
             headers: {
-                'User-Agent': 'YourAppName/1.0 (your.email@example.com)' // Replace with your app name and email
+                'User-Agent': 'weather-dashboard/1.0'
             }
         });
 

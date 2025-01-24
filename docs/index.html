@@ -9,11 +9,20 @@
     <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>Weather Dashboard</title>
 </head>
 <body>
     <div id="weather-dashboard">
-        <h1>Weather Dashboard</h1>
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+            <span class="material-symbols-rounded">light_mode</span>
+        </button>
+        <h1>
+            <a href="https://www.met.no/" target="_blank" rel="noopener" class="logo-link">
+                <img src="img/met.png" alt="Weather Dashboard Logo" class="logo">
+            </a>
+            Weather Dashboard
+        </h1>
         <div id="error-message" class="error" style="display: none;"></div>
         
         <div class="search-container">
@@ -62,4 +71,18 @@
     </div>
     <script type="module" src="app.js"></script>
 </body>
+<footer class="footer">
+    <div class="social-links">
+        <a href="https://github.com/SimonPortillo" target="_blank" rel="noopener">
+            <i class="fab fa-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/simon-portillo-75a46628b/" target="_blank" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+        </a>
+    </div>
+    <p>
+        <span class="material-symbols-rounded">fingerprint</span>
+        Created by <strong>Simon Portillo</strong>
+    </p>
+</footer>
 </html>
