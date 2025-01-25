@@ -1,6 +1,7 @@
 # Weather Dashboard
 
 A modern weather dashboard that combines data from MET Norway with Windy's visualization capabilities.
+![image](https://github.com/user-attachments/assets/1796369c-8e37-4eba-887c-12a40a218f16)
 
 ## Live Demo
 [View Demo](https://simonportillo.github.io/weather-dashboard-app/)
