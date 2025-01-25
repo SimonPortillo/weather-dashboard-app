@@ -1,6 +1,5 @@
 import { fetchWeatherData, geocodeLocation } from './utils/api.js';
 import { translations } from './utils/translations.js';
-import { config } from './config.js';
 
 class WeatherApp {
     constructor() {
@@ -235,7 +234,7 @@ class WeatherApp {
 
     initMap() {
         const options = {
-            key: config.windyApiKey,
+            key: '2SNGmsW2rAVDypBtrZXaIrciaKHk5WQg',
             lat: 0,
             lon: 0,
             zoom: 2,
