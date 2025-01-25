@@ -1,55 +1,67 @@
-# Weather Dashboard ([https://pages.github.com/](https://simonportillo.github.io/weather-dashboard-app/))
+# Weather Dashboard
 
-A modern, responsive weather dashboard application that provides real-time weather information and location mapping. Built using vanilla JavaScript with data from MET Norway's weather service.
+A modern weather dashboard that combines data from MET Norway with Windy's visualization capabilities.
 
-![image](https://github.com/user-attachments/assets/c44b954f-5264-4fe4-a471-930ddd7533d8)
+## Live Demo
+[View Demo](https://simonportillo.github.io/weather-dashboard-app/)
 
 ## Features
+- Real-time weather data
+- Interactive wind, temperature, and pressure visualizations
+- 24-hour forecast
+- Dark/Light theme
+- Multi-language support (English/Norwegian)
+- Responsive design
 
-- 🌡️ Real-time weather data including temperature, rainfall, and cloudiness
-- 📍 Location search with geocoding
-- 🎯 Current location detection
-- 🗺️ Interactive map integration with Leaflet.js
-- 🌓 Dark/Light theme toggle with persistent settings 
-- 📱 Fully responsive design
-- ⌨️ Keyboard navigation support
+## Setup
 
-## Technologies Used
+1. Clone the repository:
+```bash
+git clone https://github.com/SimonPortillo/weather-dashboard-app.git
+cd weather-dashboard-app
+```
 
-- HTML5
-- CSS3 with CSS Variables
-- Vanilla JavaScript (ES6+)
-- Leaflet.js for mapping
-- MET Norway Weather API
-- Google Material Symbols
-- Font Awesome icons
+2. Set up Windy API:
+   - Sign up for a Windy API key at [https://api.windy.com/](https://api.windy.com/)
+   - Copy `docs/config.example.js` to `docs/config.js`
+   - Add your Windy API key to `config.js`:
+```javascript
+export const config = {
+    windyApiKey: 'your_api_key_here'
+};
+```
 
-## API Credits
+3. Serve the application:
+   - Use a local server (e.g., Live Server in VS Code)
+   - Or use Python: `python -m http.server`
+   - Open `http://localhost:8000` in your browser
 
-Weather data provided by [MET Norway Weather API](https://api.met.no/), Norwegian Meteorological Institute.
+## Weather Data Sources
+- Weather data: [MET Norway Weather API](https://api.met.no/)
+- Map visualization: [Windy API](https://api.windy.com/)
+- Geocoding: OpenStreetMap Nominatim
 
-## Getting Started
+## Windy API Features
+The dashboard uses Windy's advanced visualization features:
+- Wind patterns with particle animation
+- Temperature distribution
+- Pressure systems
+- Multiple altitude levels for wind data
+- Interactive timeline
+- Distance measurement tools
 
-1. Clone the repository
-2. Navigate to the `docs` directory
-3. Open `index.html` in your browser
+## Notes
+- The Windy API key must be kept private
+- The free tier of Windy API has usage limits
+- `config.js` is gitignored to protect your API key
 
-Or visit the live version at: [Weather Dashboard Demo](https://simonportillo.github.io/weather-dashboard-app/)
-
-## Usage
-
-- Enter a city name in the search box or use the "Current Location" button
-- View detailed weather information and location on the map
-- Toggle between light and dark themes using the theme switch
-- Use Enter key to quickly search locations
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Development
+- `config.example.js` provides a template for the API configuration
+- The Windy map settings can be customized in `app.js`
+- Style customization available in `style.css`
 
 ## License
-
-This project is open source and available under the [MIT License](LICENSE).
+MIT License - See LICENSE file for details
 
 ## Developer
 

@@ -1,5 +1,6 @@
 import { fetchWeatherData, geocodeLocation } from './utils/api.js';
 import { translations } from './utils/translations.js';
+import { config } from './config.js';
 
 class WeatherApp {
     constructor() {
@@ -8,13 +9,13 @@ class WeatherApp {
         this.fetchButton = document.getElementById('fetch-weather');
         
         this.setupEventListeners();
-        this.marker = null;
-        this.mapLayer = null;
         this.initMap();
         this.initTheme();
         this.currentLang = localStorage.getItem('lang') || 'en';
         this.translations = translations;
         this.initLanguage();
+        this.windyInstance = null;
+        this.isMapInitialized = false;
     }
 
     setupEventListeners() {
@@ -78,11 +79,34 @@ class WeatherApp {
     }
 
     async fetchAndDisplayWeather(location) {
-        const weather = await fetchWeatherData(location);
-        this.updateWeatherUI(weather, location.displayName);
-        this.updateMap(location.lat, location.lon);
-        document.querySelector('.content-wrapper').classList.add('visible');
-        document.querySelector('.forecast-card').classList.add('visible');
+        try {
+            const weather = await fetchWeatherData(location);
+            
+            // Cache the location
+            localStorage.setItem('lastLat', location.lat);
+            localStorage.setItem('lastLon', location.lon);
+            
+            this.updateWeatherUI(weather, location.displayName);
+            
+            // Wait for map initialization if needed
+            if (!this.isMapInitialized) {
+                await new Promise(resolve => {
+                    const checkInit = setInterval(() => {
+                        if (this.isMapInitialized) {
+                            clearInterval(checkInit);
+                            resolve();
+                        }
+                    }, 100);
+                });
+            }
+            
+            this.updateMap(location.lat, location.lon);
+            document.querySelector('.content-wrapper').classList.add('visible');
+            document.querySelector('.forecast-card').classList.add('visible');
+        } catch (error) {
+            console.error('Error in fetchAndDisplayWeather:', error);
+            this.showError(error.message);
+        }
     }
 
     setLoading(isLoading) {
@@ -210,38 +234,65 @@ class WeatherApp {
     }
 
     initMap() {
-        this.map = L.map('map').setView([0, 0], 2);
-        this.updateMapTheme(localStorage.getItem('theme') || 'light');
+        const options = {
+            key: config.windyApiKey,
+            lat: 0,
+            lon: 0,
+            zoom: 2,
+            timestamp: Math.round(new Date().getTime() / 1000),
+            overlay: 'wind',
+            level: 'surface',
+            hourFormat: '12h',
+            verbose: true,
+            controls: true,
+            menu: true,
+            zoom: true,
+            scale: true,
+            distance: 'metric',
+            logo: true,
+            particlesAnim: 'dots',
+            levels: ['surface', '850h', '700h', '500h'],
+            overlays: ['wind', 'temp', 'pressure', 'clouds', 'rh', 'gust']
+        };
+
+        windyInit(options, windyAPI => {
+            this.windyInstance = windyAPI;
+            this.map = this.windyInstance.map;
+            
+            // Simplified initialization
+            const { store } = this.windyInstance;
+            store.set('overlay', 'wind');
+            store.set('level', 'surface');
+
+            this.isMapInitialized = true;
+            
+            // Check for cached location
+            const cachedLat = localStorage.getItem('lastLat');
+            const cachedLon = localStorage.getItem('lastLon');
+            if (cachedLat && cachedLon) {
+                this.updateMap(cachedLat, cachedLon);
+            }
+        });
     }
 
     updateMap(lat, lon) {
+        if (!this.isMapInitialized) {
+            console.log('Map not yet initialized, location will be set when ready');
+            return;
+        }
+
         const position = [parseFloat(lat), parseFloat(lon)];
         
-        // Remove existing marker if any
-        if (this.marker) {
-            this.map.removeLayer(this.marker);
+        try {
+            this.map.setView(position, 10);
+            
+            // Update Windy center
+            if (this.windyInstance && this.windyInstance.center) {
+                this.windyInstance.center(position);
+            }
+        } catch (error) {
+            console.error('Error updating map:', error);
         }
-        
-        // Add new marker
-        this.marker = L.marker(position).addTo(this.map);
-        this.map.setView(position, 10);
-    }
-
-    updateMapTheme(theme) {
-        const lightStyle = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-        const darkStyle = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-        
-        // Remove existing layer if any
-        if (this.mapLayer) {
-            this.map.removeLayer(this.mapLayer);
-        }
-
-        // Add new layer with appropriate style
-        this.mapLayer = L.tileLayer(theme === 'dark' ? darkStyle : lightStyle, {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(this.map);
     }
 
     initTheme() {
@@ -257,7 +308,6 @@ class WeatherApp {
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         this.updateThemeIcon(newTheme);
-        this.updateMapTheme(newTheme);
     }
 
     updateThemeIcon(theme) {

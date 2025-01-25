@@ -218,7 +218,7 @@ h1 {
 
 .location-text {
     font-weight: 500;
-    color: var(--text-color);
+    color: var (--text-color);
     opacity: 0.9;
 }
 
@@ -385,6 +385,8 @@ h1 {
     box-shadow: var(--shadow);
     overflow: hidden;
     padding: 0; /* Remove padding for map container */
+    position: relative;
+    z-index: 0;
 }
 
 #map {
@@ -392,6 +394,38 @@ h1 {
     height: 100%;
     min-height: 400px;
 }
+
+/* Windy map styles - consolidated and cleaned */
+.weather-map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+#windy {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Single source of truth for Windy z-index hierarchy */
+#windy .leaflet-control-container { z-index: 1100 !important; }
+#windy .leaflet-top { z-index: 1100 !important; }
+#windy .leaflet-bottom { z-index: 1100 !important; }
+#windy #map-container { z-index: 0 !important; }
+#windy .leaflet-pane { z-index: 400 !important; }
+#windy .leaflet-overlay-pane { z-index: 500 !important; }
+#windy #bottom { z-index: 1000 !important; }
+#windy #logo { z-index: 1000 !important; }
+#windy .graph-container { z-index: 1100 !important; }
+#windy .menu-container { z-index: 1100 !important; }
+
+/* Remove unused controls */
+.windy-controls { display: none; }
 
 @media (max-width: 768px) {
     .content-wrapper {
@@ -721,4 +755,25 @@ h1 {
     .forecast-container {
         grid-auto-columns: minmax(90px, 1fr); /* Increased from 70px */
     }
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--background-color);
+    border-radius: 10px;
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--background-color) transparent;
 }
