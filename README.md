@@ -26,7 +26,7 @@ A modern, responsive weather dashboard application that provides real-time weath
 
 ## API Credits
 
-Weather data provided by [MET Norway Weather API](https://www.met.no/), Norwegian Meteorological Institute.
+Weather data provided by [MET Norway Weather API](https://api.met.no/), Norwegian Meteorological Institute.
 
 ## Getting Started
 
