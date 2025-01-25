@@ -1,4 +1,5 @@
 import { fetchWeatherData, geocodeLocation } from './utils/api.js';
+import { translations } from './utils/translations.js';
 
 class WeatherApp {
     constructor() {
@@ -11,6 +12,9 @@ class WeatherApp {
         this.mapLayer = null;
         this.initMap();
         this.initTheme();
+        this.currentLang = localStorage.getItem('lang') || 'en';
+        this.translations = translations;
+        this.initLanguage();
     }
 
     setupEventListeners() {
@@ -27,6 +31,7 @@ class WeatherApp {
 
         // Add theme toggle listener
         document.querySelector('.theme-toggle').addEventListener('click', () => this.toggleTheme());
+        document.querySelector('.lang-toggle').addEventListener('click', () => this.toggleLanguage());
     }
 
     async handleLocationSearch() {
@@ -38,7 +43,9 @@ class WeatherApp {
             const location = await geocodeLocation(searchText);
             await this.fetchAndDisplayWeather(location);
         } catch (error) {
-            this.showError(error.message);
+            const errorKey = error.message.includes('Location not found') ? 'location' : 
+                           error.message.includes('Network') ? 'network' : error.message;
+            this.showError(errorKey);
         } finally {
             this.setLoading(false);
         }
@@ -46,7 +53,7 @@ class WeatherApp {
 
     async useCurrentLocation() {
         if (!navigator.geolocation) {
-            this.showError('Geolocation is not supported by your browser');
+            this.showError('geolocation');
             return;
         }
 
@@ -59,12 +66,12 @@ class WeatherApp {
             const location = {
                 lat: position.coords.latitude,
                 lon: position.coords.longitude,
-                displayName: 'Current Location'
+                displayName: this.translations[this.currentLang].currentLocation
             };
 
             await this.fetchAndDisplayWeather(location);
         } catch (error) {
-            this.showError('Error getting location');
+            this.showError('geoError');
         } finally {
             this.setLoading(false);
         }
@@ -75,6 +82,7 @@ class WeatherApp {
         this.updateWeatherUI(weather, location.displayName);
         this.updateMap(location.lat, location.lon);
         document.querySelector('.content-wrapper').classList.add('visible');
+        document.querySelector('.forecast-card').classList.add('visible');
     }
 
     setLoading(isLoading) {
@@ -87,11 +95,13 @@ class WeatherApp {
             `${searchIcon}Search`;
     }
 
-    showError(message) {
+    showError(errorKey) {
         const errorDiv = document.getElementById('error-message');
+        const errorMessage = this.translations[this.currentLang].error[errorKey] || errorKey;
+        
         errorDiv.innerHTML = `
             <span class="material-symbols-rounded" style="color: white; font-size: 24px; 
-            vertical-align: middle; margin-right: 0px; margin-bottom: 4px;">error</span>${message}`;
+            vertical-align: middle; margin-right: 0px; margin-bottom: 4px;">error</span>${errorMessage}`;
         errorDiv.style.display = 'block';
         setTimeout(() => {
             errorDiv.style.display = 'none';
@@ -139,22 +149,59 @@ class WeatherApp {
         
         // Wait for fade out
         await new Promise(resolve => setTimeout(resolve, 300));
+
+        const t = this.translations[this.currentLang];
+        
+        // Format values with defaults
+        const formattedData = {
+            temperature: weather.temperature?.toFixed(1) || 'N/A',
+            windSpeed: weather.windSpeed?.toFixed(1) || 'N/A',
+            humidity: weather.humidity || 'N/A',
+            pressure: weather.pressure || 'N/A',
+            rain: weather.rain?.toFixed(1) || '0',
+            cloudiness: weather.cloudiness || '0'
+        };
         
         const locationIcon = '<span class="material-symbols-rounded">location_on</span>';
         const tempIcon = '<span class="material-symbols-rounded">device_thermostat</span>';
+        const windIcon = '<span class="material-symbols-rounded">air</span>';
+        const humidityIcon = '<span class="material-symbols-rounded">humidity_percentage</span>';
+        const pressureIcon = '<span class="material-symbols-rounded">speed</span>';
         const rainIcon = '<span class="material-symbols-rounded">water_drop</span>';
         const cloudIcon = '<span class="material-symbols-rounded">cloud</span>';
 
-        // Update content
+        // Update content with translated labels
         document.getElementById('location-name').innerHTML = `
             ${locationIcon}<span class="location-text">${locationName}</span>
         `;
         document.getElementById('weather-summary').innerHTML = `
             <span class="material-symbols-rounded weather-summary-icon">${this.getWeatherIcon(weather)}</span>
         `;
-        document.getElementById('temperature').innerHTML = `${tempIcon}<span>Temperature: ${weather.temperature}°C</span>`;
-        document.getElementById('rain').innerHTML = `${rainIcon}<span>Rain: ${weather.rain}mm</span>`;
-        document.getElementById('cloudiness').innerHTML = `${cloudIcon}<span>Cloudiness: ${weather.cloudiness}%</span>`;
+        document.getElementById('temperature').innerHTML = `${tempIcon}<span>${t.temperature}: ${formattedData.temperature}°C</span>`;
+        document.getElementById('wind').innerHTML = `${windIcon}<span>${t.wind}: ${formattedData.windSpeed} m/s</span>`;
+        document.getElementById('humidity').innerHTML = `${humidityIcon}<span>${t.humidity}: ${formattedData.humidity}%</span>`;
+        document.getElementById('pressure').innerHTML = `${pressureIcon}<span>${t.pressure}: ${formattedData.pressure} hPa</span>`;
+        document.getElementById('rain').innerHTML = `${rainIcon}<span>${t.rain}: ${formattedData.rain}mm</span>`;
+        document.getElementById('cloudiness').innerHTML = `${cloudIcon}<span>${t.cloudiness}: ${formattedData.cloudiness}%</span>`;
+
+        // Update forecast
+        const forecastContainer = document.getElementById('forecast-container');
+        forecastContainer.innerHTML = weather.forecast.map(item => {
+            const hour = item.time.getHours().toString().padStart(2, '0');
+            const icon = this.getWeatherIcon({
+                temperature: item.temperature,
+                rain: item.precipitation,
+                cloudiness: item.cloudiness
+            });
+            
+            return `
+                <div class="forecast-item">
+                    <span class="time">${hour}:00</span>
+                    <span class="material-symbols-rounded">${icon}</span>
+                    <span class="temp">${item.temperature.toFixed(1)}°</span>
+                </div>
+            `;
+        }).join('');
 
         // Fade in
         setTimeout(() => {
@@ -216,6 +263,73 @@ class WeatherApp {
     updateThemeIcon(theme) {
         const themeIcon = document.querySelector('.theme-toggle .material-symbols-rounded');
         themeIcon.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
+    }
+
+    initLanguage() {
+        document.documentElement.setAttribute('lang', this.currentLang);
+        this.updateLanguageUI();
+        this.translatePage();
+    }
+
+    toggleLanguage() {
+        this.currentLang = this.currentLang === 'en' ? 'no' : 'en';
+        localStorage.setItem('lang', this.currentLang);
+        this.updateLanguageUI();
+        this.translatePage();
+    }
+
+    updateLanguageUI() {
+        const langButton = document.querySelector('.lang-toggle .current-lang');
+        langButton.textContent = this.currentLang.toUpperCase();
+    }
+
+    translatePage() {
+        const t = this.translations[this.currentLang];
+        
+        // Update static content
+        document.title = t.title;
+        const logoLink = document.querySelector('h1 .logo-link').outerHTML; // Preserve logo
+        document.querySelector('h1').innerHTML = `${logoLink} ${t.title}`; // Add logo back with title
+        this.locationInput.placeholder = t.searchPlaceholder;
+        document.querySelector('#fetch-weather').innerHTML = 
+            `<span class="material-symbols-rounded">travel_explore</span>${t.searchButton}`;
+        document.querySelector('#use-current-location').innerHTML = 
+            `<span class="material-symbols-rounded">my_location</span>${t.currentLocation}`;
+        document.querySelector('.forecast-card h3').textContent = t.forecast;
+
+        // Update location text if it's current location
+        const locationText = document.querySelector('.location-text');
+        if (locationText && locationText.textContent === 'Current Location') {
+            locationText.textContent = t.currentLocation;
+        }
+        
+        // Update footer text
+        const footerText = document.querySelector('.footer p');
+        footerText.innerHTML = `
+            <span class="material-symbols-rounded">fingerprint</span>
+            ${t.createdBy} <strong>Simon Portillo</strong>
+        `;
+        
+        // Update weather details if they exist
+        if (document.querySelector('.content-wrapper').classList.contains('visible')) {
+            this.updateWeatherLabels();
+        }
+    }
+
+    updateWeatherLabels() {
+        const t = this.translations[this.currentLang];
+        document.querySelector('#temperature span:last-child').textContent = 
+            `${t.temperature}: ${document.querySelector('#temperature span:last-child').textContent.split(': ')[1]}`;
+        document.querySelector('#wind span:last-child').textContent = 
+            `${t.wind}: ${document.querySelector('#wind span:last-child').textContent.split(': ')[1]}`;
+        document.querySelector('#humidity span:last-child').textContent = 
+            `${t.humidity}: ${document.querySelector('#humidity span:last-child').textContent.split(': ')[1]}`;
+        document.querySelector('#pressure span:last-child').textContent = 
+            `${t.pressure}: ${document.querySelector('#pressure span:last-child').textContent.split(': ')[1]}`;
+        document.querySelector('#rain span:last-child').textContent = 
+            `${t.rain}: ${document.querySelector('#rain span:last-child').textContent.split(': ')[1]}`;
+        document.querySelector('#cloudiness span:last-child').textContent = 
+            `${t.cloudiness}: ${document.querySelector('#cloudiness span:last-child').textContent.split(': ')[1]}`;
     }
 }
 

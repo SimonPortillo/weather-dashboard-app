@@ -26,10 +26,27 @@ export const fetchWeatherData = async (location) => {
         }
 
         const data = await response.json();
+        const currentData = data.properties.timeseries[0].data.instant.details;
+        const nextHour = data.properties.timeseries[0].data.next_1_hours;
+        
+        // Get next 24 hours forecast
+        const forecast = data.properties.timeseries
+            .slice(0, 24)
+            .map(entry => ({
+                time: new Date(entry.time),
+                temperature: entry.data.instant.details.air_temperature,
+                precipitation: entry.data.next_1_hours?.details.precipitation_amount || 0,
+                cloudiness: entry.data.instant.details.cloud_area_fraction
+            }));
+
         const weather = {
-            temperature: data.properties.timeseries[0].data.instant.details.air_temperature,
-            rain: data.properties.timeseries[0].data.next_1_hours ? data.properties.timeseries[0].data.next_1_hours.details.precipitation_amount : 0,
-            cloudiness: data.properties.timeseries[0].data.instant.details.cloud_area_fraction
+            temperature: currentData.air_temperature,
+            windSpeed: currentData.wind_speed,
+            humidity: currentData.relative_humidity,
+            pressure: currentData.air_pressure_at_sea_level,
+            rain: nextHour ? nextHour.details.precipitation_amount : 0,
+            cloudiness: currentData.cloud_area_fraction,
+            forecast: forecast
         };
 
         return weather;

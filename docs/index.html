@@ -17,6 +17,9 @@
         <button class="theme-toggle" aria-label="Toggle dark mode">
             <span class="material-symbols-rounded">light_mode</span>
         </button>
+        <button class="lang-toggle" aria-label="Toggle language">
+            <span class="current-lang">EN</span>
+        </button>
         <h1>
             <a href="https://www.met.no/" target="_blank" rel="noopener" class="logo-link">
                 <img src="img/met.png" alt="Weather Dashboard Logo" class="logo">
@@ -54,6 +57,18 @@
                         <span class="material-symbols-rounded">device_thermostat</span>
                         <span>Temperature: </span>
                     </p>
+                    <p id="wind" class="weather-item">
+                        <span class="material-symbols-rounded">air</span>
+                        <span>Wind: </span>
+                    </p>
+                    <p id="humidity" class="weather-item">
+                        <span class="material-symbols-rounded">humidity_percentage</span>
+                        <span>Humidity: </span>
+                    </p>
+                    <p id="pressure" class="weather-item">
+                        <span class="material-symbols-rounded">speed</span>
+                        <span>Pressure: </span>
+                    </p>
                     <p id="rain" class="weather-item">
                         <span class="material-symbols-rounded">water_drop</span>
                         <span>Rain: </span>
@@ -66,6 +81,14 @@
             </div>
             <div class="map-card">
                 <div id="map"></div>
+            </div>
+        </div>
+        <div class="forecast-card">
+            <h3>24 Hour Forecast</h3>
+            <div class="forecast-scroll">
+                <div id="forecast-container" class="forecast-container">
+                    <!-- Forecast items will be inserted here -->
+                </div>
             </div>
         </div>
     </div>
