@@ -3,7 +3,6 @@
 A modern, responsive weather dashboard application that provides real-time weather information and location mapping. Built using vanilla JavaScript with data from MET Norway's weather service.
 
 ![screenshot](https://github.com/user-attachments/assets/5a0da7e1-b38a-45d6-b81f-a4849699101d)
-https://roadmap.sh/projects/weather-app
 
 ## Features
 
