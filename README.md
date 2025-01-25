@@ -1,7 +1,6 @@
 # Weather Dashboard ([https://pages.github.com/](https://simonportillo.github.io/weather-dashboard-app/))
 
 A modern, responsive weather dashboard application that provides real-time weather information and location mapping. Built using vanilla JavaScript with data from MET Norway's weather service.
-https://roadmap.sh/projects/weather-api-wrapper-service
 
 ![screenshot](https://github.com/user-attachments/assets/5a0da7e1-b38a-45d6-b81f-a4849699101d)
 
