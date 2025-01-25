@@ -2,7 +2,7 @@
 
 A modern, responsive weather dashboard application that provides real-time weather information and location mapping. Built using vanilla JavaScript with data from MET Norway's weather service.
 
-![screenshot](https://github.com/user-attachments/assets/5a0da7e1-b38a-45d6-b81f-a4849699101d)
+![image](https://github.com/user-attachments/assets/c44b954f-5264-4fe4-a471-930ddd7533d8)
 
 ## Features
 
@@ -10,7 +10,7 @@ A modern, responsive weather dashboard application that provides real-time weath
 - 📍 Location search with geocoding
 - 🎯 Current location detection
 - 🗺️ Interactive map integration with Leaflet.js
-- 🌓 Dark/Light theme toggle with persistent settings
+- 🌓 Dark/Light theme toggle with persistent settings 
 - 📱 Fully responsive design
 - ⌨️ Keyboard navigation support
 
