@@ -12,7 +12,7 @@ export async function geocodeLocation(searchText) {
 }
 
 export const fetchWeatherData = async (location) => {
-    const url = `https://api.met.no/weatherapi/locationforecast/2.0/mini?altitude=1&lat=${location.lat}&lon=${location.lon}`;
+    const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?altitude=1&lat=${location.lat}&lon=${location.lon}`;
 
     try {
         const response = await fetch(url, {
